@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	imgconv.Convert("./test/sample1.jpg")
+	imgconv.Convert("./test/")
 }
