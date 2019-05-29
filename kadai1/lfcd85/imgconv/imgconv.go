@@ -13,6 +13,10 @@ import (
 )
 
 func Convert(dirName string) {
+	if dirName == "" {
+		panic("Directory name is not provided.")
+	}
+
 	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
