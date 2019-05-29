@@ -47,7 +47,7 @@ func Convert(dirName string, from string, to string) {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
+		if isFmtFrom := checkExt(info.Name(), fmtFrom); !info.IsDir() && isFmtFrom {
 			convSingleFile(path)
 		}
 		return nil
@@ -55,6 +55,12 @@ func Convert(dirName string, from string, to string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func checkExt(fileName string, fmtFrom string) bool {
+	fileExt := strings.TrimPrefix(filepath.Ext(fileName), ".")
+	fileImgFmt := convFromExtToImgFmt(fileExt)
+	return fileImgFmt == fmtFrom
 }
 
 func convSingleFile(path string) {
