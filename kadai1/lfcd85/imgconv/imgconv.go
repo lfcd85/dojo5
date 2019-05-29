@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,11 +45,6 @@ func convSingleFile(path string) {
 	if format == "jpeg" {
 		writeOutputFile(img, path)
 	}
-}
-
-func detectImageFormat(r io.Reader) (string, error) {
-	_, format, err := image.DecodeConfig(r)
-	return format, err
 }
 
 func writeOutputFile(img image.Image, path string) {
