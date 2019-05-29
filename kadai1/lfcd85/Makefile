@@ -1,2 +1,5 @@
-bin/convert: cmd/convert/*.go
+bin/convert: cmd/convert/*.go imgconv/*.go
 	go build -o bin/convert cmd/convert/main.go
+
+fmt:
+	go fmt ./...
