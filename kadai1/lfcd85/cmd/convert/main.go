@@ -7,8 +7,10 @@ import (
 )
 
 func main() {
+	from := flag.String("f", "jpeg", "Image format before conversion (default: jpeg)")
+	to := flag.String("t", "png", "Image format after conversion (default: png)")
 	flag.Parse()
 	dirName := flag.Arg(0)
 
-	imgconv.Convert(dirName)
+	imgconv.Convert(dirName, *from, *to)
 }
