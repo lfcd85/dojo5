@@ -11,18 +11,34 @@ import (
 	"strings"
 )
 
+type Exts []string
+type ImgFmtExt map[string]Exts
+
 var (
-	fmtFrom string
-	fmtTo   string
+	fmtFrom   string
+	fmtTo     string
+	imgFmtExt ImgFmtExt
 )
+
+func initExt() ImgFmtExt {
+	return ImgFmtExt{
+		"jpeg": Exts{"jpg", "jpeg"},
+		"png":  Exts{"png"},
+		"gif":  Exts{"gif"},
+	}
+}
 
 func Convert(dirName string, from string, to string) {
 	if dirName == "" {
 		panic("Directory name is not provided.")
 	}
 
-	fmtFrom = detectImgFmt(from)
-	fmtTo = detectImgFmt(to)
+	imgFmtExt = initExt()
+	fmtFrom = convFromExtToImgFmt(from)
+	fmtTo = convFromExtToImgFmt(to)
+	if fmtFrom == "" || fmtTo == "" {
+		panic("Given image format is not supported.")
+	}
 	if fmtFrom == fmtTo {
 		panic("Image formats before and after conversion are the same.")
 	}
@@ -39,23 +55,6 @@ func Convert(dirName string, from string, to string) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func detectImgFmt(fmt string) string {
-	var detectedFmt string
-
-	switch fmt = strings.ToLower(fmt); fmt {
-	case "jpg", "jpeg":
-		detectedFmt = "jpeg"
-	case "png":
-		detectedFmt = "png"
-	case "gif":
-		detectedFmt = "gif"
-	default:
-		panic("Given image format is not supported.")
-	}
-
-	return detectedFmt
 }
 
 func convSingleFile(path string) {
@@ -76,15 +75,14 @@ func convSingleFile(path string) {
 }
 
 func writeOutputFile(img image.Image, path string) {
-	ext := fmtTo
-	file, err := os.Create(generateOutputPath(path, ext))
+	file, err := os.Create(generateOutputPath(path, fmtTo))
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
 	switch fmtTo {
-	case "jpg", "jpeg":
+	case "jpeg":
 		if err := jpeg.Encode(file, img, nil); err != nil {
 			panic(err)
 		}
@@ -99,8 +97,31 @@ func writeOutputFile(img image.Image, path string) {
 	}
 }
 
-func generateOutputPath(path string, ext string) string {
+func generateOutputPath(path string, fmtTo string) string {
 	// TODO: consider the case when the file of the same name already exists
 	base := strings.TrimRight(filepath.Base(path), filepath.Ext(path))
+	ext := convFromImgFmtToExt(fmtTo)
 	return strings.Join([]string{base, ext}, ".")
+}
+
+func convFromExtToImgFmt(ext string) string {
+	ext = strings.ToLower(ext)
+	for imgFmt, fmtExts := range imgFmtExt {
+		for _, fmtExt := range fmtExts {
+			if ext == fmtExt {
+				return imgFmt
+			}
+		}
+	}
+	return ""
+}
+
+func convFromImgFmtToExt(fmt string) string {
+	fmt = strings.ToLower(fmt)
+	for imgFmt, fmtExts := range imgFmtExt {
+		if fmt == imgFmt {
+			return fmtExts[0]
+		}
+	}
+	return ""
 }
