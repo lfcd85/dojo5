@@ -108,10 +108,9 @@ func writeOutputFile(img image.Image, path string) {
 }
 
 func generateOutputPath(path string, fmtTo ImgFmt) string {
-	// TODO: consider the case when the file of the same name already exists
-	base := strings.TrimRight(filepath.Base(path), filepath.Ext(path))
+	dirAndBase := strings.TrimRight(path, filepath.Ext(path))
 	ext := convFromImgFmtToExt(fmtTo)
-	return strings.Join([]string{base, string(ext)}, ".")
+	return strings.Join([]string{dirAndBase, string(ext)}, ".")
 }
 
 func convFromExtToImgFmt(ext Ext) ImgFmt {
