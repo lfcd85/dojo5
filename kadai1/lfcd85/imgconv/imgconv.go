@@ -22,30 +22,13 @@ var (
 	imgFmtExts ImgFmtExts
 )
 
-func initExts() ImgFmtExts {
-	return ImgFmtExts{
-		"jpeg": Exts{"jpg", "jpeg"},
-		"png":  Exts{"png"},
-		"gif":  Exts{"gif"},
-	}
-}
-
 func Convert(dirName string, from string, to string) {
 	if dirName == "" {
 		panic("Directory name is not provided.")
 	}
 
-	imgFmtExts = initExts()
-	extFrom := Ext(strings.ToLower(from))
-	extTo := Ext(strings.ToLower(to))
-	fmtFrom = convFromExtToImgFmt(extFrom)
-	fmtTo = convFromExtToImgFmt(extTo)
-	if fmtFrom == "" || fmtTo == "" {
-		panic("Given image format is not supported.")
-	}
-	if fmtFrom == fmtTo {
-		panic("Image formats before and after conversion are the same.")
-	}
+	initExts()
+	detectImgFmts(from, to)
 
 	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -58,6 +41,28 @@ func Convert(dirName string, from string, to string) {
 	})
 	if err != nil {
 		panic(err)
+	}
+}
+
+func initExts() {
+	imgFmtExts = ImgFmtExts{
+		"jpeg": Exts{"jpg", "jpeg"},
+		"png":  Exts{"png"},
+		"gif":  Exts{"gif"},
+	}
+}
+
+func detectImgFmts(from string, to string) {
+	extFrom := Ext(strings.ToLower(from))
+	extTo := Ext(strings.ToLower(to))
+	fmtFrom = convFromExtToImgFmt(extFrom)
+	fmtTo = convFromExtToImgFmt(extTo)
+
+	if fmtFrom == "" || fmtTo == "" {
+		panic("Given image format is not supported.")
+	}
+	if fmtFrom == fmtTo {
+		panic("Image formats before and after conversion are the same.")
 	}
 }
 
