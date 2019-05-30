@@ -11,17 +11,19 @@ import (
 	"strings"
 )
 
-type Exts []string
-type ImgFmtExt map[string]Exts
+type ImgFmt string
+type Ext string
+type Exts []Ext
+type ImgFmtExts map[ImgFmt]Exts
 
 var (
-	fmtFrom   string
-	fmtTo     string
-	imgFmtExt ImgFmtExt
+	fmtFrom    ImgFmt
+	fmtTo      ImgFmt
+	imgFmtExts ImgFmtExts
 )
 
-func initExt() ImgFmtExt {
-	return ImgFmtExt{
+func initExts() ImgFmtExts {
+	return ImgFmtExts{
 		"jpeg": Exts{"jpg", "jpeg"},
 		"png":  Exts{"png"},
 		"gif":  Exts{"gif"},
@@ -33,9 +35,11 @@ func Convert(dirName string, from string, to string) {
 		panic("Directory name is not provided.")
 	}
 
-	imgFmtExt = initExt()
-	fmtFrom = convFromExtToImgFmt(from)
-	fmtTo = convFromExtToImgFmt(to)
+	imgFmtExts = initExts()
+	extFrom := Ext(strings.ToLower(from))
+	extTo := Ext(strings.ToLower(to))
+	fmtFrom = convFromExtToImgFmt(extFrom)
+	fmtTo = convFromExtToImgFmt(extTo)
 	if fmtFrom == "" || fmtTo == "" {
 		panic("Given image format is not supported.")
 	}
@@ -57,8 +61,8 @@ func Convert(dirName string, from string, to string) {
 	}
 }
 
-func checkExt(fileName string, fmtFrom string) bool {
-	fileExt := strings.TrimPrefix(filepath.Ext(fileName), ".")
+func checkExt(fileName string, fmtFrom ImgFmt) bool {
+	fileExt := Ext(strings.TrimPrefix(filepath.Ext(fileName), "."))
 	fileImgFmt := convFromExtToImgFmt(fileExt)
 	return fileImgFmt == fmtFrom
 }
@@ -70,12 +74,12 @@ func convSingleFile(path string) {
 	}
 	defer file.Close()
 
-	img, format, err := image.Decode(file)
+	img, fmtStr, err := image.Decode(file)
 	if err != nil {
 		fmt.Printf("%q will not be converted (%v)\n", path, err)
 	}
 
-	if format == fmtFrom {
+	if ImgFmt(fmtStr) == fmtFrom {
 		writeOutputFile(img, path)
 	}
 }
@@ -103,16 +107,15 @@ func writeOutputFile(img image.Image, path string) {
 	}
 }
 
-func generateOutputPath(path string, fmtTo string) string {
+func generateOutputPath(path string, fmtTo ImgFmt) string {
 	// TODO: consider the case when the file of the same name already exists
 	base := strings.TrimRight(filepath.Base(path), filepath.Ext(path))
 	ext := convFromImgFmtToExt(fmtTo)
-	return strings.Join([]string{base, ext}, ".")
+	return strings.Join([]string{base, string(ext)}, ".")
 }
 
-func convFromExtToImgFmt(ext string) string {
-	ext = strings.ToLower(ext)
-	for imgFmt, fmtExts := range imgFmtExt {
+func convFromExtToImgFmt(ext Ext) ImgFmt {
+	for imgFmt, fmtExts := range imgFmtExts {
 		for _, fmtExt := range fmtExts {
 			if ext == fmtExt {
 				return imgFmt
@@ -122,9 +125,8 @@ func convFromExtToImgFmt(ext string) string {
 	return ""
 }
 
-func convFromImgFmtToExt(fmt string) string {
-	fmt = strings.ToLower(fmt)
-	for imgFmt, fmtExts := range imgFmtExt {
+func convFromImgFmtToExt(fmt ImgFmt) Ext {
+	for imgFmt, fmtExts := range imgFmtExts {
 		if fmt == imgFmt {
 			return fmtExts[0]
 		}
