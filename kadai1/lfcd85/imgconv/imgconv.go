@@ -15,16 +15,19 @@ import (
 
 // ImgFmtExts is a map of the image formats and its extensions
 type ImgFmtExts map[ImgFmt]Exts
+
 // Exts is a slice of image extensions
 type Exts []Ext
+
 // Ext is a image extension
 type Ext string
+
 // ImgFmt is a image format
 type ImgFmt string
 
 var (
-	fmtFrom ImgFmt
-	fmtTo ImgFmt
+	fmtFrom    ImgFmt
+	fmtTo      ImgFmt
 	imgFmtExts ImgFmtExts
 )
 
@@ -46,13 +49,9 @@ func Convert(dirName string, from string, to string) error {
 		if err != nil {
 			return err
 		}
-		if isFmtFrom := checkExt(info.Name()); !info.IsDir() && isFmtFrom {
-			err := convSingleFile(path)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+
+		err = convSingleFile(path, info)
+		return err
 	})
 	return err
 }
@@ -79,7 +78,11 @@ func checkExt(fileName string) bool {
 	return fileImgFmt == fmtFrom
 }
 
-func convSingleFile(path string) error {
+func convSingleFile(path string, info os.FileInfo) error {
+	if isFmtFrom := checkExt(info.Name()); info.IsDir() || !isFmtFrom {
+		return nil
+	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -89,15 +92,14 @@ func convSingleFile(path string) error {
 	img, fmtStr, err := image.Decode(file)
 	if err != nil {
 		fmt.Printf("%q is skipped (%v)\n", path, err)
+		return nil
+	}
+	if ImgFmt(fmtStr) != fmtFrom {
+		return nil
 	}
 
-	if ImgFmt(fmtStr) == fmtFrom {
-		err := writeOutputFile(img, path)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	err = writeOutputFile(img, path)
+	return err
 }
 
 func writeOutputFile(img image.Image, path string) error {
