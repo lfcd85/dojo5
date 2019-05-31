@@ -2,6 +2,7 @@
 package imgconv
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -28,26 +29,32 @@ var (
 )
 
 // Convert recursively seeks a given directory and converts images from and to given formats.
-func Convert(dirName string, from string, to string) {
+func Convert(dirName string, from string, to string) error {
 	if dirName == "" {
-		panic("Directory name is not provided.")
+		return errors.New("Directory name is not provided.")
 	}
 
-	initExts()
 	detectImgFmts(from, to)
+	if fmtFrom == "" || fmtTo == "" {
+		return errors.New("Given image format is not supported.")
+	}
+	if fmtFrom == fmtTo {
+		return errors.New("Image formats before and after conversion are the same.")
+	}
 
 	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if isFmtFrom := checkExt(info.Name(), fmtFrom); !info.IsDir() && isFmtFrom {
-			convSingleFile(path)
+		if isFmtFrom := checkExt(info.Name()); !info.IsDir() && isFmtFrom {
+			err := convSingleFile(path)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 func initExts() {
@@ -59,66 +66,65 @@ func initExts() {
 }
 
 func detectImgFmts(from string, to string) {
+	initExts()
 	extFrom := Ext(strings.ToLower(from))
 	extTo := Ext(strings.ToLower(to))
 	fmtFrom = convFromExtToImgFmt(extFrom)
 	fmtTo = convFromExtToImgFmt(extTo)
-
-	if fmtFrom == "" || fmtTo == "" {
-		panic("Given image format is not supported.")
-	}
-	if fmtFrom == fmtTo {
-		panic("Image formats before and after conversion are the same.")
-	}
 }
 
-func checkExt(fileName string, fmtFrom ImgFmt) bool {
+func checkExt(fileName string) bool {
 	fileExt := Ext(strings.TrimPrefix(filepath.Ext(fileName), "."))
 	fileImgFmt := convFromExtToImgFmt(fileExt)
 	return fileImgFmt == fmtFrom
 }
 
-func convSingleFile(path string) {
+func convSingleFile(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
 
 	img, fmtStr, err := image.Decode(file)
 	if err != nil {
-		fmt.Printf("%q will not be converted (%v)\n", path, err)
+		fmt.Printf("%q is skipped (%v)\n", path, err)
 	}
 
 	if ImgFmt(fmtStr) == fmtFrom {
-		writeOutputFile(img, path)
+		err := writeOutputFile(img, path)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func writeOutputFile(img image.Image, path string) {
-	file, err := os.Create(generateOutputPath(path, fmtTo))
+func writeOutputFile(img image.Image, path string) error {
+	file, err := os.Create(generateOutputPath(path))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
 
 	switch fmtTo {
 	case "jpeg":
 		if err := jpeg.Encode(file, img, nil); err != nil {
-			panic(err)
+			return err
 		}
 	case "png":
 		if err := png.Encode(file, img); err != nil {
-			panic(err)
+			return err
 		}
 	case "gif":
 		if err := gif.Encode(file, img, nil); err != nil {
-			panic(err)
+			return err
 		}
 	}
+	return nil
 }
 
-func generateOutputPath(path string, fmtTo ImgFmt) string {
+func generateOutputPath(path string) string {
 	dirAndBase := strings.TrimRight(path, filepath.Ext(path))
 	ext := convFromImgFmtToExt(fmtTo)
 	return strings.Join([]string{dirAndBase, string(ext)}, ".")

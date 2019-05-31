@@ -12,5 +12,8 @@ func main() {
 	flag.Parse()
 	dirName := flag.Arg(0)
 
-	imgconv.Convert(dirName, *from, *to)
+	err := imgconv.Convert(dirName, *from, *to)
+	if err != nil {
+		panic(err)
+	}
 }
