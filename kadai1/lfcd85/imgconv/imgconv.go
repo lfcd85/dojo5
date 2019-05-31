@@ -1,3 +1,4 @@
+// Package imgconv provides a recursive conversion of images in the directory.
 package imgconv
 
 import (
@@ -11,17 +12,22 @@ import (
 	"strings"
 )
 
-type ImgFmt string
-type Ext string
-type Exts []Ext
+// ImgFmtExts is a map of the image formats and its extensions
 type ImgFmtExts map[ImgFmt]Exts
+// Exts is a slice of image extensions
+type Exts []Ext
+// Ext is a image extension
+type Ext string
+// ImgFmt is a image format
+type ImgFmt string
 
 var (
-	fmtFrom    ImgFmt
-	fmtTo      ImgFmt
+	fmtFrom ImgFmt
+	fmtTo ImgFmt
 	imgFmtExts ImgFmtExts
 )
 
+// Convert recursively seeks a given directory and converts images from and to given formats.
 func Convert(dirName string, from string, to string) {
 	if dirName == "" {
 		panic("Directory name is not provided.")
