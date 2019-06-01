@@ -13,16 +13,16 @@ import (
 	"strings"
 )
 
-// ImgFmtExts is a map of the image formats and its extensions
+// ImgFmtExts is a map of the image formats and its extensions.
 type ImgFmtExts map[ImgFmt]Exts
 
-// Exts is a slice of image extensions
+// Exts is a slice of image extensions.
 type Exts []Ext
 
-// Ext is a image extension
+// Ext is a image extension.
 type Ext string
 
-// ImgFmt is a image format
+// ImgFmt is a image format.
 type ImgFmt string
 
 var (
