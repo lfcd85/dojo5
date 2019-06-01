@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/lfcd85/dojo5/kadai1/lfcd85/imgconv"
 )
@@ -14,6 +15,7 @@ func main() {
 
 	err := imgconv.Convert(dirName, *from, *to)
 	if err != nil {
-		panic(err)
+		fmt.Println("error:", err)
+		return
 	}
 }
