@@ -49,56 +49,6 @@ func TestConvert(t *testing.T) {
 
 */
 
-func TestDetectImgFmts(t *testing.T) {
-	cases := []struct {
-		from            string
-		to              string
-		expectedFmtFrom ImgFmt
-		expectedFmtTo   ImgFmt
-	}{
-		{
-			"PNG",
-			"jpg",
-			ImgFmt("png"),
-			ImgFmt("jpeg"),
-		},
-		{
-			"gif",
-			"JPEG",
-			ImgFmt("gif"),
-			ImgFmt("jpeg"),
-		},
-	}
-
-	for _, c := range cases {
-		detectImgFmts(c.from, c.to)
-		assertEq(t, fmtFrom, c.expectedFmtFrom)
-		assertEq(t, fmtTo, c.expectedFmtTo)
-	}
-}
-
-func TestCheckExt(t *testing.T) {
-	cases := []struct {
-		fileName string
-		fmtFrom  ImgFmt
-		expected bool
-	}{
-		{"hoge.jpg", ImgFmt("jpeg"), true},
-		{"fuga.png", ImgFmt("gif"), false},
-		{"piyo.png", ImgFmt("png"), true},
-		{"foo.js", ImgFmt("png"), false},
-		{".JPEG", ImgFmt("jpeg"), true},
-		{"jpeg", ImgFmt("jpeg"), false},
-		{"foopng", ImgFmt("png"), false},
-	}
-
-	initExts()
-	for _, c := range cases {
-		fmtFrom = c.fmtFrom
-		assertEq(t, checkExt(c.fileName), c.expected)
-	}
-}
-
 func TestGenerateOutputPath(t *testing.T) {
 	cases := []struct {
 		path     string
@@ -122,9 +72,49 @@ func TestGenerateOutputPath(t *testing.T) {
 		},
 	}
 
-	initExts()
+	imgFmtExts.Init()
 	for _, c := range cases {
 		fmtTo = c.fmtTo
 		assertEq(t, generateOutputPath(c.path), c.expected)
+	}
+}
+
+func TestImgFmt_Detect(t *testing.T) {
+	cases := []struct {
+		extStr   string
+		expected ImgFmt
+	}{
+		{"png", ImgFmt("png")},
+		{"jpg", ImgFmt("jpeg")},
+		{"JPEG", ImgFmt("jpeg")},
+		{"GIF", ImgFmt("gif")},
+	}
+
+	imgFmtExts.Init()
+	var imgFmt ImgFmt
+	for _, c := range cases {
+		imgFmt.Detect(c.extStr)
+		assertEq(t, imgFmt, c.expected)
+	}
+}
+
+func TestImgFmt_Match(t *testing.T) {
+	cases := []struct {
+		fileName string
+		imgFmt   ImgFmt
+		expected bool
+	}{
+		{"hoge.jpg", ImgFmt("jpeg"), true},
+		{"fuga.png", ImgFmt("gif"), false},
+		{"piyo.png", ImgFmt("png"), true},
+		{"foo.js", ImgFmt("png"), false},
+		{".JPEG", ImgFmt("jpeg"), true},
+		{"jpeg", ImgFmt("jpeg"), false},
+		{"foopng", ImgFmt("png"), false},
+	}
+
+	imgFmtExts.Init()
+	for _, c := range cases {
+		assertEq(t, c.imgFmt.Match(c.fileName), c.expected)
 	}
 }
