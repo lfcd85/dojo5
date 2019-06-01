@@ -34,15 +34,15 @@ var (
 // Convert recursively seeks a given directory and converts images from and to given formats.
 func Convert(dirName string, from string, to string) error {
 	if dirName == "" {
-		return errors.New("Directory name is not provided.")
+		return errors.New("directory name is not provided.")
 	}
 
 	detectImgFmts(from, to)
 	if fmtFrom == "" || fmtTo == "" {
-		return errors.New("Given image format is not supported.")
+		return errors.New("given image format is not supported.")
 	}
 	if fmtFrom == fmtTo {
-		return errors.New("Image formats before and after conversion are the same.")
+		return errors.New("image formats before and after conversion are the same.")
 	}
 
 	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
