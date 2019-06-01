@@ -1,3 +1,4 @@
+// Command bin/convert ...
 package main
 
 import (
