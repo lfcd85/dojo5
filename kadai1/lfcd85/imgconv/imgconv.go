@@ -13,9 +13,6 @@ import (
 	"strings"
 )
 
-// ImgFmtExts is a map of the image formats and its extensions.
-type ImgFmtExts map[ImgFmt]Exts
-
 // Exts is a slice of image extensions.
 type Exts []Ext
 
@@ -28,7 +25,7 @@ type ImgFmt string
 var (
 	fmtFrom    ImgFmt
 	fmtTo      ImgFmt
-	imgFmtExts ImgFmtExts
+	imgFmtExts map[ImgFmt]Exts
 )
 
 // Convert recursively seeks a given directory and converts images from and to given formats.
@@ -57,7 +54,7 @@ func Convert(dir string, from string, to string) error {
 }
 
 func initExts() {
-	imgFmtExts = ImgFmtExts{
+	imgFmtExts = map[ImgFmt]Exts{
 		"jpeg": Exts{"jpg", "jpeg"},
 		"png":  Exts{"png"},
 		"gif":  Exts{"gif"},
