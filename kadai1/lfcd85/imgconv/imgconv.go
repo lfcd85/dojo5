@@ -32,8 +32,8 @@ var (
 )
 
 // Convert recursively seeks a given directory and converts images from and to given formats.
-func Convert(dirName string, from string, to string) error {
-	if dirName == "" {
+func Convert(dir string, from string, to string) error {
+	if dir == "" {
 		return errors.New("directory name is not provided")
 	}
 
@@ -45,7 +45,7 @@ func Convert(dirName string, from string, to string) error {
 		return errors.New("image formats before and after conversion are the same")
 	}
 
-	err := filepath.Walk(dirName, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -84,13 +84,13 @@ func convSingleFile(path string, info os.FileInfo) error {
 		return nil
 	}
 
-	file, err := os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	img, fmtStr, err := image.Decode(file)
+	img, fmtStr, err := image.Decode(f)
 	if err != nil {
 		fmt.Printf("%q is skipped (%v)\n", path, err)
 		return nil
@@ -104,23 +104,23 @@ func convSingleFile(path string, info os.FileInfo) error {
 }
 
 func writeOutputFile(img image.Image, path string) error {
-	file, err := os.Create(generateOutputPath(path))
+	f, err := os.Create(generateOutputPath(path))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer f.Close()
 
 	switch fmtTo {
 	case "jpeg":
-		if err := jpeg.Encode(file, img, nil); err != nil {
+		if err := jpeg.Encode(f, img, nil); err != nil {
 			return err
 		}
 	case "png":
-		if err := png.Encode(file, img); err != nil {
+		if err := png.Encode(f, img); err != nil {
 			return err
 		}
 	case "gif":
-		if err := gif.Encode(file, img, nil); err != nil {
+		if err := gif.Encode(f, img, nil); err != nil {
 			return err
 		}
 	}
