@@ -73,7 +73,8 @@ func detectImgFmts(from string, to string) {
 }
 
 func checkExt(fileName string) bool {
-	fileExt := Ext(strings.TrimPrefix(filepath.Ext(fileName), "."))
+	fileExtStr := strings.TrimPrefix(filepath.Ext(fileName), ".")
+	fileExt := Ext(strings.ToLower(fileExtStr))
 	fileImgFmt := convFromExtToImgFmt(fileExt)
 	return fileImgFmt == fmtFrom
 }
