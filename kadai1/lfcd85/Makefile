@@ -3,6 +3,7 @@ bin/convert: cmd/convert/*.go imgconv/*.go
 
 fmt:
 	go fmt ./...
+	go vet ./...
 
 check:
 	go test ./... -v
