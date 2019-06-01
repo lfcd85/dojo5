@@ -112,11 +112,13 @@ func generateOutputPath(path string) string {
 	return strings.Join([]string{dirAndBase, string(ext)}, ".")
 }
 
+// Detect specifies image format from file extension string.
 func (imgFmt *ImgFmt) Detect(extStr string) {
 	ext := Ext(strings.ToLower(extStr))
 	*imgFmt = imgFmtExts.ConvToImgFmt(ext)
 }
 
+// Match checks whether the file has an extension of the image format.
 func (imgFmt ImgFmt) Match(fileName string) bool {
 	fileExtStr := strings.TrimPrefix(filepath.Ext(fileName), ".")
 	fileExt := Ext(strings.ToLower(fileExtStr))
@@ -124,6 +126,7 @@ func (imgFmt ImgFmt) Match(fileName string) bool {
 	return fileImgFmt == imgFmt
 }
 
+// Init creates the map of image formats and its extensions available.
 func (m MapImgFmtExts) Init() {
 	imgFmtExts = MapImgFmtExts{
 		"jpeg": Exts{"jpg", "jpeg"},
@@ -132,6 +135,7 @@ func (m MapImgFmtExts) Init() {
 	}
 }
 
+// ConvToImgFmt converts image extension to its format.
 func (m MapImgFmtExts) ConvToImgFmt(ext Ext) ImgFmt {
 	for imgFmt, fmtExts := range m {
 		for _, fmtExt := range fmtExts {
@@ -143,6 +147,7 @@ func (m MapImgFmtExts) ConvToImgFmt(ext Ext) ImgFmt {
 	return ""
 }
 
+// ConvToExt converts image format to its extension.
 func (m MapImgFmtExts) ConvToExt(imgFmt ImgFmt) Ext {
 	for keyImgFmt, fmtExts := range m {
 		if imgFmt == keyImgFmt {
